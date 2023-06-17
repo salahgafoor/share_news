@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image and Text Combination</title>
+</head>
+<body>
+  <h1>Image and Text Combination</h1>
+
+  <form id="imageForm">
+    <label for="imageUpload1">Upload Image 1:</label>
+    <input type="file" id="imageUpload1" accept="image/*"><br><br>
+
+    <label for="imageUpload2">Upload Image 2:</label>
+    <input type="file" id="imageUpload2" accept="image/*"><br><br>
+
+    <label for="textField1">Text Field 1:</label>
+    <input type="text" id="textField1"><br><br>
+
+    <label for="textField2">Text Field 2:</label>
+    <textarea id="textField2" rows="4"></textarea><br><br> <!-- Updated to textarea and set rows -->
+
+    <label for="imageUpload3">Upload Image 3:</label>
+    <input type="file" id="imageUpload3" accept="image/*"><br><br>
+
+    <button type="button" onclick="combineImageAndText()">Combine and Download</button>
+  </form>
+
+  <br><br>
+
+  <div id="result"></div>
+
+  <script>
+    function combineImageAndText() {
+      var imageUpload1 = document.getElementById("imageUpload1");
+      var imageUpload2 = document.getElementById("imageUpload2");
+      var imageUpload3 = document.getElementById("imageUpload3");
+      var textField1 = document.getElementById("textField1").value;
+      var textField2 = document.getElementById("textField2").value;
+      var resultDiv = document.getElementById("result");
+
+      if (imageUpload1.files && imageUpload1.files[0] && imageUpload2.files && imageUpload2.files[0] && imageUpload3.files && imageUpload3.files[0]) {
+        var reader1 = new FileReader();
+        var reader2 = new FileReader();
+        var reader3 = new FileReader();
+
+        reader1.onload = function(e1) {
+          reader2.onload = function(e2) {
+            reader3.onload = function(e3) {
+              var image1 = new Image();
+              image1.src = e1.target.result;
+
+              var image2 = new Image();
+              image2.src = e2.target.result;
+
+              var image3 = new Image();
+              image3.src = e3.target.result;
+
+              image3.onload = function() {
+                var canvas = document.createElement("canvas");
+                canvas.width = image3.width;
+                canvas.height = image3.height + image1.height + image2.height + 150; // Adjusting height for text fields
+
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(image1, 0, 0);
+                ctx.drawImage(image2, 0, image1.height);
+                ctx.font = "30px Arial";
+                ctx.fillText(textField1, 10, image1.height + image2.height + 50);
+
+                // Adjusting line spacing for multiline text
+                var lines = textField2.split("\n");
+                for (var i = 0; i < lines.length; i++) {
+                  ctx.fillText(lines[i], 10, image1.height + image2.height + 100 + (i * 30));
+                }
+
+                ctx.drawImage(image3, 0, image1.height + image2.height + 150);
+
+                var combinedImage = canvas.toDataURL("image/png");
+
+                var link = document.createElement("a");
+                link.href = combinedImage;
+                link.download = "combined_image.png";
+                link.innerHTML = "<img src='" + combinedImage + "' alt='Combined Image'>";
+                resultDiv.appendChild(link);
+              };
+            };
+
+            reader3.readAsDataURL(imageUpload3.files[0]);
+          };
+
+          reader2.readAsDataURL(imageUpload2.files[0]);
+        };
+
+        reader1.readAsDataURL(imageUpload1.files[0]);
+      } else {
+        resultDiv.innerHTML = "Please upload all three images and fill in the text fields.";
+      }
+    }
+  </script>
+</body>
+</html>
