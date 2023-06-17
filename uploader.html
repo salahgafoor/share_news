@@ -52,41 +52,56 @@
                 image2.onload = function() {
                   var image3 = new Image();
                   image3.onload = function() {
-                    // Calculate the aspect ratio of the resulting image
                     var maxImageWidth = 1280;
                     var maxImageHeight = 1600;
-                    var aspectRatio = Math.min(maxImageWidth / image1.width, maxImageHeight / (image1.height + image2.height + 150 + 30 * textField2.split("\n").length));
+                    var fixedWidth = maxImageWidth;
+                    var aspectRatio2 = 4 / 3;
+                    var image1Height = (fixedWidth / image1.width) * image1.height;
+                    var image2Height = (fixedWidth / image2.width) * image2.height * aspectRatio2;
+                    var image3Height = (fixedWidth / image3.width) * image3.height;
 
                     var canvas = document.createElement("canvas");
-                    canvas.width = maxImageWidth;
-                    canvas.height = maxImageHeight;
+                    canvas.width = fixedWidth;
+                    canvas.height = image1Height + image2Height + image3Height + 150 + 30 * textField2.split("\n").length;
 
                     var ctx = canvas.getContext("2d");
-                    ctx.fillStyle = "white"; // Set white background color
+                    ctx.fillStyle = "white";
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                     var offsetY = 0;
 
-                    ctx.drawImage(image1, 0, offsetY, image1.width * aspectRatio, image1.height * aspectRatio);
-                    offsetY += image1.height * aspectRatio;
+                    ctx.drawImage(image1, 0, offsetY, fixedWidth, image1Height);
+                    offsetY += image1Height;
 
-                    ctx.drawImage(image2, 0, offsetY, image2.width * aspectRatio, image2.height * aspectRatio);
-                    offsetY += image2.height * aspectRatio;
+                    // Center-crop Image 2 to fit within the frame
+                    var image2Width = fixedWidth;
+                    var image2X = 0;
+                    var image2Y = offsetY;
+                    if (image2.height / image2.width > aspectRatio2) {
+                      image2Height = (fixedWidth / image2.width) * image2.height;
+                      image2Y += (image2Height - image2Height / aspectRatio2) / 2;
+                      image2Height /= aspectRatio2;
+                    } else {
+                      image2Width = (image2.width / image2.height) * image2Height * aspectRatio2;
+                      image2X += (fixedWidth - image2Width) / 2;
+                    }
+                    ctx.drawImage(image2, image2X, image2Y, image2Width, image2Height);
+                    offsetY += image2Height;
 
-                    ctx.font = "bold 30px Arial"; // Apply bold font style to textField1
+                    ctx.font = "bold 30px Arial";
                     ctx.fillStyle = "black";
                     ctx.fillText(textField1, 10, offsetY + 50);
                     offsetY += 100;
 
                     var lines = textField2.split("\n");
-                    ctx.font = "30px Arial"; // Reset font style for textField2
+                    ctx.font = "30px Arial";
                     for (var i = 0; i < lines.length; i++) {
                       ctx.fillText(lines[i], 10, offsetY + (i * 30));
                     }
 
                     offsetY += 30 * lines.length;
 
-                    ctx.drawImage(image3, 0, offsetY + 50, image3.width * aspectRatio, image3.height * aspectRatio);
+                    ctx.drawImage(image3, 0, offsetY + 50, fixedWidth, (fixedWidth / image3.width) * image3.height);
 
                     var combinedImage = canvas.toDataURL("image/png");
 
