@@ -57,7 +57,17 @@
                     var fixedWidth = maxImageWidth;
                     var aspectRatio2 = 4 / 3;
                     var image1Height = (fixedWidth / image1.width) * image1.height;
-                    var image2Height = (fixedWidth / image2.width) * image2.height * aspectRatio2;
+                    var image2Width = fixedWidth;
+                    var image2Height = (image2Width / image2.width) * image2.height;
+
+                    if (image2Height > 570) {
+                      image2Height = 570;
+                      image2Width = (image2Height / image2.height) * image2.width;
+                    }
+
+                    var image2X = (fixedWidth - image2Width) / 2;
+                    var image2Y = image1Height;
+
                     var image3Height = (fixedWidth / image3.width) * image3.height;
 
                     var canvas = document.createElement("canvas");
@@ -73,18 +83,6 @@
                     ctx.drawImage(image1, 0, offsetY, fixedWidth, image1Height);
                     offsetY += image1Height;
 
-                    // Center-crop Image 2 to fit within the frame
-                    var image2Width = fixedWidth;
-                    var image2X = 0;
-                    var image2Y = offsetY;
-                    if (image2.height / image2.width > aspectRatio2) {
-                      image2Height = (fixedWidth / image2.width) * image2.height;
-                      image2Y += (image2Height - image2Height / aspectRatio2) / 2;
-                      image2Height /= aspectRatio2;
-                    } else {
-                      image2Width = (image2.width / image2.height) * image2Height * aspectRatio2;
-                      image2X += (fixedWidth - image2Width) / 2;
-                    }
                     ctx.drawImage(image2, image2X, image2Y, image2Width, image2Height);
                     offsetY += image2Height;
 
