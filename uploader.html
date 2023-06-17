@@ -2,6 +2,18 @@
 <html>
 <head>
   <title>Image and Text Combination</title>
+  <style>
+    .image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 2px;
+    }
+
+    .text-container {
+      margin: 2px;
+    }
+  </style>
 </head>
 <body>
   <h1>Image and Text Combination</h1>
@@ -13,11 +25,15 @@
     <label for="imageUpload2">Upload Image 2:</label>
     <input type="file" id="imageUpload2" accept="image/*"><br><br>
 
-    <label for="textField1">Text Field 1:</label>
-    <input type="text" id="textField1"><br><br>
+    <div class="image-container">
+      <label for="textField1">Text Field 1:</label>
+      <input type="text" id="textField1" style="width: 100%;"><br><br>
+    </div>
 
-    <label for="textField2">Text Field 2:</label>
-    <textarea id="textField2" rows="4"></textarea><br><br>
+    <div class="image-container">
+      <label for="textField2">Text Field 2:</label>
+      <textarea id="textField2" rows="4" style="width: 100%;"></textarea><br><br>
+    </div>
 
     <label for="imageUpload3">Upload Image 3:</label>
     <input type="file" id="imageUpload3" accept="image/*"><br><br>
@@ -72,7 +88,7 @@
 
                     var canvas = document.createElement("canvas");
                     canvas.width = fixedWidth;
-                    canvas.height = image1Height + image2Height + image3Height + 150 + 30 * textField2.split("\n").length;
+                    canvas.height = image1Height + image2Height + image3Height + 150 + 30 * Math.ceil(textField2.length * 24 / (fixedWidth - 10)) + 100;
 
                     var ctx = canvas.getContext("2d");
                     ctx.fillStyle = "white";
@@ -88,13 +104,28 @@
 
                     ctx.font = "bold 30px Arial";
                     ctx.fillStyle = "black";
-                    ctx.fillText(textField1, 10, offsetY + 50);
+                    ctx.fillText(textField1, 2, offsetY + 50);
                     offsetY += 100;
 
-                    var lines = textField2.split("\n");
-                    ctx.font = "30px Arial";
+                    var lines = [];
+                    var words = textField2.split(" ");
+                    var currentLine = "";
+                    for (var i = 0; i < words.length; i++) {
+                      var word = words[i];
+                      var text = currentLine + " " + word;
+                      var textWidth = ctx.measureText(text).width;
+                      if (textWidth > fixedWidth - 10) {
+                        lines.push(currentLine.trim());
+                        currentLine = word;
+                      } else {
+                        currentLine = text;
+                      }
+                    }
+                    lines.push(currentLine.trim());
+
+                    ctx.font = "24px Arial";
                     for (var i = 0; i < lines.length; i++) {
-                      ctx.fillText(lines[i], 10, offsetY + (i * 30));
+                      ctx.fillText(lines[i], 2, offsetY + 50 + (i * 30));
                     }
 
                     offsetY += 30 * lines.length;
