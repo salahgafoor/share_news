@@ -17,7 +17,7 @@
     <input type="text" id="textField1"><br><br>
 
     <label for="textField2">Text Field 2:</label>
-    <textarea id="textField2" rows="4"></textarea><br><br> <!-- Updated to textarea and set rows -->
+    <textarea id="textField2" rows="4"></textarea><br><br>
 
     <label for="imageUpload3">Upload Image 3:</label>
     <input type="file" id="imageUpload3" accept="image/*"><br><br>
@@ -47,41 +47,63 @@
           reader2.onload = function(e2) {
             reader3.onload = function(e3) {
               var image1 = new Image();
-              image1.src = e1.target.result;
+              image1.onload = function() {
+                var image2 = new Image();
+                image2.onload = function() {
+                  var image3 = new Image();
+                  image3.onload = function() {
+                    // Calculate the aspect ratio of the resulting image
+                    var maxImageWidth = 1280;
+                    var maxImageHeight = 1600;
+                    var aspectRatio = Math.min(maxImageWidth / image1.width, maxImageHeight / (image1.height + image2.height + 150 + 30 * textField2.split("\n").length));
 
-              var image2 = new Image();
-              image2.src = e2.target.result;
+                    var canvas = document.createElement("canvas");
+                    canvas.width = maxImageWidth;
+                    canvas.height = maxImageHeight;
 
-              var image3 = new Image();
-              image3.src = e3.target.result;
+                    var ctx = canvas.getContext("2d");
+                    ctx.fillStyle = "white"; // Set white background color
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-              image3.onload = function() {
-                var canvas = document.createElement("canvas");
-                canvas.width = image3.width;
-                canvas.height = image3.height + image1.height + image2.height + 150; // Adjusting height for text fields
+                    var offsetY = 0;
 
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(image1, 0, 0);
-                ctx.drawImage(image2, 0, image1.height);
-                ctx.font = "30px Arial";
-                ctx.fillText(textField1, 10, image1.height + image2.height + 50);
+                    ctx.drawImage(image1, 0, offsetY, image1.width * aspectRatio, image1.height * aspectRatio);
+                    offsetY += image1.height * aspectRatio;
 
-                // Adjusting line spacing for multiline text
-                var lines = textField2.split("\n");
-                for (var i = 0; i < lines.length; i++) {
-                  ctx.fillText(lines[i], 10, image1.height + image2.height + 100 + (i * 30));
-                }
+                    ctx.drawImage(image2, 0, offsetY, image2.width * aspectRatio, image2.height * aspectRatio);
+                    offsetY += image2.height * aspectRatio;
 
-                ctx.drawImage(image3, 0, image1.height + image2.height + 150);
+                    ctx.font = "bold 30px Arial"; // Apply bold font style to textField1
+                    ctx.fillStyle = "black";
+                    ctx.fillText(textField1, 10, offsetY + 50);
+                    offsetY += 100;
 
-                var combinedImage = canvas.toDataURL("image/png");
+                    var lines = textField2.split("\n");
+                    ctx.font = "30px Arial"; // Reset font style for textField2
+                    for (var i = 0; i < lines.length; i++) {
+                      ctx.fillText(lines[i], 10, offsetY + (i * 30));
+                    }
 
-                var link = document.createElement("a");
-                link.href = combinedImage;
-                link.download = "combined_image.png";
-                link.innerHTML = "<img src='" + combinedImage + "' alt='Combined Image'>";
-                resultDiv.appendChild(link);
+                    offsetY += 30 * lines.length;
+
+                    ctx.drawImage(image3, 0, offsetY + 50, image3.width * aspectRatio, image3.height * aspectRatio);
+
+                    var combinedImage = canvas.toDataURL("image/png");
+
+                    var link = document.createElement("a");
+                    link.href = combinedImage;
+                    link.download = "combined_image.png";
+                    link.innerHTML = "<img src='" + combinedImage + "' alt='Combined Image'>";
+                    resultDiv.appendChild(link);
+                  };
+
+                  image3.src = e3.target.result;
+                };
+
+                image2.src = e2.target.result;
               };
+
+              image1.src = e1.target.result;
             };
 
             reader3.readAsDataURL(imageUpload3.files[0]);
